@@ -6,7 +6,14 @@
 
     <groupId>RmiTestEx</groupId>
     <artifactId>RmiTestEx</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
+    <modules>
+        <module>rmi-test-ex-server</module>
+        <module>rmi-test-ex-client</module>
+        <module>rmi-test-ex-api</module>
+        <module>rmi-test-managment</module>
+    </modules>
 
 </project>
