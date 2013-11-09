@@ -1,10 +1,10 @@
 package org.rmitestex.service;
 
 import org.rmitestex.api.AccountService;
+import org.rmitestex.model.Account;
 
-import java.lang.Integer;
-import java.lang.Long;
-import java.lang.Override;
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
@@ -12,25 +12,47 @@ import java.util.Map;
 
 public class AccountServiceImplementation extends UnicastRemoteObject implements AccountService {
 
-    private Map<Integer, Long> accounts;
+
+    private EntityManager em;
 
     public AccountServiceImplementation() throws RemoteException {
         super();
-        accounts = new HashMap<Integer, Long>();
+
+        em = Persistence.createEntityManagerFactory("org.rmitestex.model").createEntityManager();
     }
 
     @Override
     public Long getAmount(Integer id) throws RemoteException {
-        return accounts.get(id) == null ? 0 : accounts.get(id);
+
+        Account acc = getAccountById(id);
+
+        return acc == null ? 0 : acc.getAmmount();
     }
 
     @Override
     public void addAmount(Integer id, Long amount) throws RemoteException {
-        if (!accounts.containsKey(id)){
-            accounts.put(id,amount);
+
+        Account acc = getAccountById(id);
+
+        if (acc==null) {
+           addAccount(id,amount);
         } else {
-            Long am = accounts.get(id) + amount;
-            accounts.put(id,am);
+            Long am = acc.getAmmount() + amount;
+            em.getTransaction().begin();
+            acc.setAmmount(am);
+            em.getTransaction().commit();
         }
+    }
+
+    private void addAccount(Integer id, Long amount ){
+        em.getTransaction().begin();
+        em.persist(new Account(id,amount));
+        em.getTransaction().commit();
+    }
+
+    private Account getAccountById(Integer id) {
+        System.out.println("queried account "+ id);
+        return em.find(Account.class,id);
+
     }
 }
