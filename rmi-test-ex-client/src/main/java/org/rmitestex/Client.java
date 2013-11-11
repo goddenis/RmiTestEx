@@ -3,28 +3,57 @@ package org.rmitestex;
 import org.rmitestex.api.AccountService;
 
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 
 public class Client {
 
-    public static void main(String argsp[]){
+    public static void main(String argsp[]) {
+
+
+        Integer[] ids = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+
+
         try {
-            AccountService service = (AccountService) Naming.lookup("rmi://127.0.0.1/server");
 
-            System.out.println(service.getAmount(1));
-            service.addAmount(1, Long.valueOf(3));
-            System.out.println(service.getAmount(1));
 
-            service.addAmount(1, 7l);
-            System.out.println(service.getAmount(1));
+            final AccountService service = (AccountService) Naming.lookup("rmi://127.0.0.1/server");
 
-            service.getAmount(2);
+            for (final Integer i : ids) {
 
-            service.addAmount(2,4l);
-            service.addAmount(2,6l);
-            System.out.println(service.getAmount(2));
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
 
-        } catch (Exception e){
+                        System.out.println("Starting add thread on id:"+i);
+
+                        Long am = (long) (Math.random() * 1000);
+                        try {
+                            service.addAmount(i, am);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+
+                        System.out.println("Finishing add thread on id:"+i);
+
+                    }
+                });
+
+                thread.start();
+
+            }
+
+            for (final Integer i :ids){
+                Long amount = service.getAmount(i);
+
+                System.out.println(String.format("Account's %d ammount %d ",i,amount));
+
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
+
+
 }

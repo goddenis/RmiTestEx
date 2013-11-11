@@ -4,11 +4,13 @@ import org.rmitestex.api.AccountService;
 import org.rmitestex.model.Account;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class AccountServiceImplementation extends UnicastRemoteObject implements AccountService {
 
@@ -30,17 +32,28 @@ public class AccountServiceImplementation extends UnicastRemoteObject implements
     }
 
     @Override
-    public void addAmount(Integer id, Long amount) throws RemoteException {
+    public synchronized void addAmount(Integer id, Long amount) throws RemoteException {
 
+        long delay = (long) (Math.random()*1000);
+
+        System.out.println("waiting for "+ delay);
+
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Account acc = getAccountById(id);
 
         if (acc==null) {
            addAccount(id,amount);
         } else {
             Long am = acc.getAmmount() + amount;
-            em.getTransaction().begin();
+            EntityTransaction tr = em.getTransaction();
+            tr.begin();
+            System.out.println(tr.toString());
             acc.setAmmount(am);
-            em.getTransaction().commit();
+            tr.commit();
         }
     }
 
